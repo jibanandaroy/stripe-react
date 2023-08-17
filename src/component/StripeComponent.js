@@ -8,6 +8,18 @@ export default function StripeComponent() {
     const [stripe, setStripe] = useState("");
     const [stripeElement, setStripeElement] = useState("");
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const API  =  "https://api.exchangerate-api.com/v4/latest/USD" ;
+    const [showAmount, setShowAmount] = useState({amount:0 ,symbol:"USD"})
+
+
+    const getSymbol = {
+        'USD' : '$', 
+        'EUR' : '€', 
+        'GBP' : '£', 
+        'JPY' : '¥',
+        'BDT': 'tk'
+    }
 
     useEffect(() => {
         const stripeKey = window.Stripe('pk_test_51NGbtWL6EDqw6EU4OxgKxZLfiULcOpePVkQ5Zg2giMNCTMzKTAA2jNQKa6HMcRKHwsGxMFvVgudR5YQElTp1o7m400zHjaVAMP')
@@ -20,6 +32,37 @@ export default function StripeComponent() {
         setStripeElement(cardElement);
     }, [])
 
+    useEffect(()=>{
+        const currencyCode = window.geoplugin_currencyCode();
+        
+        const option = document.createElement('option');
+        option.innerText = currencyCode.toUpperCase();
+        option.value = currencyCode.toLowerCase();
+        document.getElementById("opt").appendChild(option);
+
+        
+    },[])
+
+    useEffect(()=>{
+        const fetchData = async ()=>{
+            try{
+                const response = await axios.get(API);
+                const base = data.currency.toUpperCase()
+                const rate = response.data.rates[base];
+                const convert = data.amount*rate;
+                setShowAmount((prev)=>({...prev,amount:Math.round(convert*100)/100, symbol:base}));
+                console.log(convert);
+            }catch(error)
+            {
+                setError(error.message);
+            }
+        }
+        fetchData();
+    },[data.amount, data.currency])
+
+
+    useEffect(()=>{},[error]);
+
     async function comfirmPaymentIntent(response) {
         await axios.post('https://api.stripe.com/v1/payment_intents/' + response.data.id + '/confirm', {}, {
             headers: {
@@ -29,7 +72,8 @@ export default function StripeComponent() {
         })
             .then(function (response) {
                 console.log(response);
-                
+                alert("payment successful");
+
             })
             .catch(function (error) {
                 console.log(error);
@@ -63,6 +107,7 @@ export default function StripeComponent() {
 
     async function handleSubmit(e) {
         e.preventDefault();
+        setIsLoading(true);
         setError("");
         try {
             const { paymentMethod, error } = await stripe.createPaymentMethod(
@@ -81,7 +126,10 @@ export default function StripeComponent() {
             }
         }
         catch (error) {
-            setError(error);
+            setError(error.message);
+        }
+        finally {
+            setIsLoading(false);
         }
 
     }
@@ -141,11 +189,12 @@ export default function StripeComponent() {
                         <label htmlFor="currency" className="currency">
                             Select Currency
                         </label>
-                        <select name="currency" id="" className="custom-select" onChange={(e) => { setdata((prev) => ({ ...prev, currency: e.target.value })) }}>
+                        <select name="currency" id="opt" className="custom-select" onChange={(e) => { setdata((prev) => ({ ...prev, currency: e.target.value })) }}>
                             <option value="usd">USD</option>
                             <option value="eur">EUR</option>
                             <option value="gbp">GBP</option>
                             <option value="jpy">JPY</option>
+
                         </select>
                         <br />
                         <br />
@@ -155,9 +204,18 @@ export default function StripeComponent() {
                         <br /><br />
                         <div className="cardElement" />
 
-                        <button type="submit" id="payButton" className="btn btn-primary btn-lg">
-                            Pay with stripe
-                        </button>
+                        {isLoading ? (
+                            <>
+                                <button type="submit" id="payButton" className="btn btn-primary btn-lg">
+                                    Loading...
+                                </button>
+                            </>
+                        ) : (<>
+                            {error && <div className="error">{error}</div>}
+                            <button  type="submit" id="payButton" className="btn btn-primary btn-lg">
+                                Pay {showAmount.amount} {getSymbol[showAmount.symbol] ? getSymbol[showAmount.symbol] :''}
+                            </button>
+                        </>)}
                     </form>
                 </div>
             </div>
