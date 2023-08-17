@@ -9,15 +9,16 @@ export default function StripeComponent() {
     const [stripeElement, setStripeElement] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const API  =  "https://api.exchangerate-api.com/v4/latest/USD" ;
-    const [showAmount, setShowAmount] = useState({amount:0 ,symbol:"USD"})
+    const API = "https://api.exchangerate-api.com/v4/latest/USD";
+    const [showAmount, setShowAmount] = useState({ amount: 0, symbol: "USD" })
 
+    const validCurrencies = ['usd', 'eur', 'gbp', 'jpy'];
 
     const getSymbol = {
-        'USD' : '$', 
-        'EUR' : '€', 
-        'GBP' : '£', 
-        'JPY' : '¥',
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'JPY': '¥',
         'BDT': 'tk'
     }
 
@@ -32,36 +33,35 @@ export default function StripeComponent() {
         setStripeElement(cardElement);
     }, [])
 
-    useEffect(()=>{
+    useEffect(() => {
         const currencyCode = window.geoplugin_currencyCode();
-        
+
         const option = document.createElement('option');
         option.innerText = currencyCode.toUpperCase();
         option.value = currencyCode.toLowerCase();
         document.getElementById("opt").appendChild(option);
 
-        
-    },[])
 
-    useEffect(()=>{
-        const fetchData = async ()=>{
-            try{
+    }, [])
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
                 const response = await axios.get(API);
                 const base = data.currency.toUpperCase()
                 const rate = response.data.rates[base];
-                const convert = data.amount*rate;
-                setShowAmount((prev)=>({...prev,amount:Math.round(convert*100)/100, symbol:base}));
-                console.log(convert);
-            }catch(error)
-            {
+                const convert = data.amount * rate;
+                setShowAmount((prev) => ({ ...prev, amount: Math.round(convert * 100) / 100, symbol: base }));
+                
+            } catch (error) {
                 setError(error.message);
             }
         }
         fetchData();
-    },[data.amount, data.currency])
+    }, [data.amount, data.currency])
 
 
-    useEffect(()=>{},[error]);
+    useEffect(() => { }, [error]);
 
     async function comfirmPaymentIntent(response) {
         await axios.post('https://api.stripe.com/v1/payment_intents/' + response.data.id + '/confirm', {}, {
@@ -109,28 +109,36 @@ export default function StripeComponent() {
         e.preventDefault();
         setIsLoading(true);
         setError("");
-        try {
-            const { paymentMethod, error } = await stripe.createPaymentMethod(
-                'card', stripeElement, {
-                billing_details: {
-                    "name": data.name,
-                    "email": data.email
+
+        if (validCurrencies.includes(data.currency.toLowerCase())) {
+            try {
+                const { paymentMethod, error } = await stripe.createPaymentMethod(
+                    'card', stripeElement, {
+                    billing_details: {
+                        "name": data.name,
+                        "email": data.email
+                    }
+                }
+                );
+
+                if (error) {
+                    setError(error.message);
+                } else {
+                    await createPaymentIntent(paymentMethod)
                 }
             }
-            );
-
-            if (error) {
+            catch (error) {
                 setError(error.message);
-            } else {
-                await createPaymentIntent(paymentMethod)
+            }
+            finally {
+                setIsLoading(false);
             }
         }
-        catch (error) {
-            setError(error.message);
-        }
-        finally {
+        else{
+            setError(`Unvalid currency : ${data.currency}`);
             setIsLoading(false);
         }
+
 
     }
 
@@ -212,8 +220,8 @@ export default function StripeComponent() {
                             </>
                         ) : (<>
                             {error && <div className="error">{error}</div>}
-                            <button  type="submit" id="payButton" className="btn btn-primary btn-lg">
-                                Pay {showAmount.amount} {getSymbol[showAmount.symbol] ? getSymbol[showAmount.symbol] :''}
+                            <button type="submit" id="payButton" className="btn btn-primary btn-lg">
+                                Pay {showAmount.amount} {getSymbol[showAmount.symbol] ? getSymbol[showAmount.symbol] : ''}
                             </button>
                         </>)}
                     </form>
