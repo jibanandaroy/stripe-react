@@ -1,0 +1,11 @@
+{
+    "header":"Stripe Payment",
+    "Name":"Name",
+    "Email":"Email",
+    "amount":"Amount you want to pay",
+    "dot":"Up to two decimal positions, using a dot \".\"",
+    "currency":"Select Currency",
+    "card":"Card details",
+    "pay":"pay",
+    "loading":"Loading..."
+}

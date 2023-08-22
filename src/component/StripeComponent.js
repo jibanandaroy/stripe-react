@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 export default function StripeComponent() {
 
     //const { Stripe } = useScript('https://js.stripe.com/v3/', 'Stripe', 'test')
@@ -11,6 +12,7 @@ export default function StripeComponent() {
     const [isLoading, setIsLoading] = useState(false);
     const API = "https://api.exchangerate-api.com/v4/latest/USD";
     const [showAmount, setShowAmount] = useState({ amount: 0, symbol: "USD" })
+    const {t,i18n} = useTranslation('translation')
 
     const validCurrencies = ['usd', 'eur', 'gbp', 'jpy'];
 
@@ -142,40 +144,55 @@ export default function StripeComponent() {
 
     }
 
+    const changeLanBn = () =>{
+        i18n.changeLanguage('bn')
+    }
+    const changeLanEn = () =>{
+        i18n.changeLanguage('en')
+    }
+ 
+
 
     return (
         <>
+        <div className="languageBtn">
+            <button id="lanBtn" onClick={changeLanEn}>English</button>
+        <button id="lanBtn" onClick={changeLanBn}>Bangla</button>
+        </div>
+        
+        
             <div className="main">
+                
                 <div className="register">
                     <div className="header">
-                        <h2>Payment</h2>
+                        <h2>{t('header')}</h2>
                     </div>
 
                     <form id="register" method="post" onSubmit={handleSubmit}>
-                        <label htmlFor="">Name: </label>
+                        <label htmlFor="">{t('Name')} </label>
                         <br />
                         <input
                             onChange={(e) => { setdata((prev) => ({ ...prev, name: e.target.value })) }}
                             type="text"
                             name="name"
                             id="name"
-                            placeholder="Enter Your Name"
+                            placeholder={t('PName')}
                         />
                         <br />
                         <br />
-                        <label htmlFor="">Email: </label>
+                        <label htmlFor="">{t('Email')} </label>
                         <br />
                         <input
                             onChange={(e) => { setdata((prev) => ({ ...prev, email: e.target.value })) }}
                             type="email"
                             name="email"
                             id="name"
-                            placeholder="Enter Your Valid Email"
+                            placeholder={t('PEmail')}
                         />
                         <br />
                         <br />
                         <label htmlFor="value" className="pay">
-                            Amount you want to pay:
+                            {t('amount')}
                         </label>
                         <br />
                         <input
@@ -190,12 +207,12 @@ export default function StripeComponent() {
                         />
                         <br />
                         <small className="form-text text-danger">
-                            Up to two decimal positions, using a dot "."
+                            {t('dot')}
                         </small>
                         <br />
                         <br />
                         <label htmlFor="currency" className="currency">
-                            Select Currency
+                            {t('currency')}
                         </label>
                         <select name="currency" id="opt" className="custom-select" onChange={(e) => { setdata((prev) => ({ ...prev, currency: e.target.value })) }}>
                             <option value="usd">USD</option>
@@ -207,7 +224,7 @@ export default function StripeComponent() {
                         <br />
                         <br />
                         <label className="mt-3" htmlFor="card-element">
-                            Card details:
+                            {t('card')}
                         </label>
                         <br /><br />
                         <div className="cardElement" />
@@ -215,13 +232,13 @@ export default function StripeComponent() {
                         {isLoading ? (
                             <>
                                 <button type="submit" id="payButton" className="btn btn-primary btn-lg">
-                                    Loading...
+                                    {t('loading')}
                                 </button>
                             </>
                         ) : (<>
                             {error && <div className="error">{error}</div>}
                             <button type="submit" id="payButton" className="btn btn-primary btn-lg">
-                                Pay {showAmount.amount} {getSymbol[showAmount.symbol] ? getSymbol[showAmount.symbol] : ''}
+                                {t('pay')} {showAmount.amount} {getSymbol[showAmount.symbol] ? getSymbol[showAmount.symbol] : ''}
                             </button>
                         </>)}
                     </form>

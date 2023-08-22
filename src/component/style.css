@@ -7,7 +7,7 @@ body{
 }
 .main{
     width: 450px;
-    margin: 50px auto;
+    margin: 45px auto;
 }
 h2{
     text-align: center;
@@ -65,4 +65,14 @@ label{
     background-color: red;
     color: #ffff;
     transition: .5s;
+}
+.languageBtn{
+    text-align: right;
+    padding-right: 20px;
+}
+
+#lanBtn{
+    padding-left: 5px;
+    padding-right: 5px;
+
 }
