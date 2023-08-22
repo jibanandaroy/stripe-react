@@ -148,7 +148,7 @@ export default function StripeComponent() {
             <div className="main">
                 <div className="register">
                     <div className="header">
-                        <h2>Stripe Payment</h2>
+                        <h2>Payment</h2>
                     </div>
 
                     <form id="register" method="post" onSubmit={handleSubmit}>
